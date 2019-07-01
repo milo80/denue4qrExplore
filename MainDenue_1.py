@@ -4,6 +4,7 @@ from classes.DataModel import ViewData, GeoJson
 from pyspark.sql import functions as f
 import functions.Utilities as utls
 import csv
+import sys
 
 if __name__ == '__main__':
     # Load "comercio al por mayor"
@@ -20,10 +21,12 @@ if __name__ == '__main__':
     file_porMenor_3 = 'denue_inegi_46321-46531_.csv'
     path_porMenor_4 = '/home/milo/Develope/input/inegi/denue_com_pormenor_4/conjunto_de_datos/'
     file_porMenor_4 = 'denue_inegi_46591-46911_.csv'
+    Path_2 = '/home/milo/Develope/input/inegi/denue_serv_esparcimiento_cult_dep_recreat/conjunto_de_datos/'
+    File_2 = 'denue_inegi_71_.csv'
 
     #df0 = spark.load_denue_csv(path_porMayor, file_porMayor)
     #df1 = spark.load_denue_csv(path_porMenor_1, file_porMenor_1)
-    df_all = spark.load_denue_csv(path_porMenor_2, file_porMenor_2)
+    df_all = spark.load_denue_csv(Path_2, File_2)
     #df3 = spark.load_denue_csv(path_porMenor_3, file_porMenor_3)
     #df4 = spark.load_denue_csv(path_porMenor_4, file_porMenor_4)
 
@@ -46,9 +49,8 @@ if __name__ == '__main__':
     #Reduce category -> subCategory
     df_all = spark.reduce_category_name(df_all)
 
-    df_all.select('*').show()
     # Denue Count categories
-    df_ck = df_all.groupby('category').count().sort(f.col('count').desc())
+    df_ck = df_all.groupby('reduct_cat_name').count().sort(f.col('count').desc())
     #N = df_ck.count()
     #print('Total Categorias : ', N)
     #df_ck.filter(f.col('category').isNull()).show()
@@ -61,6 +63,7 @@ if __name__ == '__main__':
         writer.writerows(out)
 
     # Send data to Orion Context Broker
+    sys.exit(0)
 
     OCB_model = spark.map_dataframe_to_OCB_model(df_all, 'comercioPorMenor', 'unidadEconomica')
 
@@ -72,10 +75,10 @@ if __name__ == '__main__':
     path = '/home/milo/Develope/output/'
     file = 'test-format'
     #GeoJson.save_geojson(OCB_model[:300], path, file)
-    #spark.send_entities_to_orionCB(OCB_model)
+    spark.send_entities_to_orionCB(OCB_model[213850:])
 
     # Send data to Orion Batch Mode
-    spark.send_entities_to_orionCB_batch(OCB_model[213850:])
+    # spark.send_entities_to_orionCB_batch(OCB_model[213850:])
     """
     PointsDenue = spark.maps_DF_to_geojson(df_all)
 

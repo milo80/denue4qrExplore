@@ -44,7 +44,7 @@ if __name__ == '__main__':
     ColFileds = ['raz_social', 'nombre_act']
     # df_all = spark.filter_keyword_over_columnField(df_all, FilterKeys, ColFileds)
 
-    # TODO: change to match keyword category NOT exact category name
+    # TODO: change to match keyword category, NOT exact category name
     KeysCategory = []
 
     df_all, CntDict, ColorDict = spark.group_by_categories_colored(df_all, 35, KeysCategory)
