@@ -127,15 +127,14 @@ class Denue:
     # Function filter by street name and <Entidad>
     def filter_by_address_and_federal_entity(self, df_B: object, Keywords):
         DataColumns = ['nom_vial', 'entidad']
-        df_B = df_B.filter(contains_keyword_and_entity_udf(Keywords)(
-            f.struct(DataColumns)))\
-            .select('*')
+        df_B = df_B.filter(contains_keyword_and_entity_udf(Keywords)(f.struct(DataColumns))).select('*')
 
         return df_B
 
     # Filter by keywords on any valid input field
     def filter_keyword_over_columnField(self, df_B, Keywords, ColField):
-        df_B = df_B.filter(filter_column_udf(Keywords)(f.struct(ColField)))
+        if len(Keywords) > 0:
+            df_B = df_B.filter(filter_column_udf(Keywords)(f.struct(ColField)))
         return df_B
 
     # Match "id_act" VS activity from SCIAN catalog
@@ -155,17 +154,17 @@ class Denue:
 
     # Broups and counts bussiness by category
     # Prints out colors by category
-    def group_by_categories_colored(self, df_B, MaxCatDisplay, KeysCategory):
+    def group_by_categories_colored(self, df_B, MaxCatDisplay, KeysCategory, CategField):
         CountDict = {}
-        df = df_B.groupby('category').count().sort(f.col('count').desc())
+        df = df_B.groupby(CategField).count().sort(f.col('count').desc())
         #df = self.reduce_category_name(df)
         #
         if len(KeysCategory) > 0:
-            df = df.filter(f.col('category').isin(KeysCategory))
-            df_B = df_B.filter(f.col('category').isin(KeysCategory))
+            df = df.filter(filter_column_udf(KeysCategory)(f.struct([CategField])))
+            df_B = df_B.filter(filter_column_udf(KeysCategory)(f.struct([CategField])))
 
         for item in df.collect():
-            CountDict[item['category']] = item['count']
+            CountDict[item[CategField]] = item['count']
 
         if len(CountDict) >= MaxCatDisplay:
             KeysCategory = list(CountDict.keys())[:MaxCatDisplay]
@@ -182,69 +181,194 @@ class Denue:
 
         ColorDict = create_dict_colors(KeysCategory)
         df_B = df_B.withColumn('color_cat',
-                               color_category_udf(ColorDict)(f.col('category')))
+                               color_category_udf(ColorDict)(f.col(CategField)))
 
         return df_B, CountDict, ColorDict
 
     # Reduce Category name with dictionary
     def reduce_category_name(self, df_B):
         ReductDict = {
-                      "Comercio al por menor de frutas y verduras frescas": "frutasVerduras",
-                      "Comercio al por menor de carnes rojas": "carnesRojas",
-                      "Comercio al por menor en minisupers": "minisupers",
-                      "Comercio al por menor de carne de aves": "carneAves",
-                      "Comercio al por menor de dulces y materias primas para repostería": "dulcesReposteria",
-                      "Comercio al por menor de cerveza": "cerveza",
-                      "Comercio al por menor de otros alimentos": "alimentos",
-                      "Comercio al por menor de bebidas no alcohólicas y hielo": "bebidasNoAlcoholicas",
-                      "Comercio al por menor de leche": "lacteos",
-                      "Comercio al por menor de artículos de mercería y bonetería": "merceriaBoneteria",
-                      "Comercio al por menor de paletas de hielo y helados": "helados",
-                      "Comercio al por menor de semillas y granos alimenticios": "semillasGranos",
-                      "Comercio al por menor de vinos y licores": "vinosLicores",
-                      "Comercio al por menor de pescados y mariscos": "pescadosMariscos",
-                      "Comercio al por menor en supermercados": "supermercados",
-                      "Comercio al por menor de blancos": "blancos",
-                      "Comercio al por menor de telas": "telas",
-                      "Comercio al por menor en tiendas departamentales": "tiendasDepartamentales",
-                      "Comercio al por menor de cigarros": "cigarros",
-                      "Comercio al por menor en tiendas de abarrotes": "abarrotes",
-                      "Centros de acondicionamiento físico del sector privado": "gimnacioPrivado",
-                      "Casas de juegos electrónicos": "juegosElectronicos",
-                      "Venta de billetes de lotería": "billetesLoteria",
-                      "Cantantes y grupos musicales del sector privado": "gruposMusicalesPrivado",
-                      "Centros de acondicionamiento físico del sector público": "gimnacioPublico",
-                      "Promotores del sector público de espectáculos artísticos": "promotorEspectaculosPublico",
-                      "Otros servicios recreativos prestados por el sector privado": "serviciosRecreativosPrivado",
-                      "Otros servicios recreativos prestados por el sector público": "serviciosRecreativosPublico",
-                      "Parques acuáticos y balnearios del sector privado": "parquesAcuaticosPrivado",
-                      "Parques acuáticos y balnearios del sector público": "parquesAcuaticosPublico",
-                      "Promotores del sector privado de espectáculos artísticos": "promotorEspectaculosPrivado",
-                      "Promotores de espectáculos artísticos": "promotorEspectaculosArtisticos",
-                      "Museos del sector público": "museosPublico",
-                      "Museos del sector privado": "museosPrivado",
-                      "Clubes o ligas de aficionados": "clubesAficionados",
-                      "Clubes deportivos del sector privado": "clubesDeportivosPrivado",
-                      "Clubes deportivos del sector público": "clubesDeportivosPublico",
-                      "Parques de diversiones y temáticos del sector público": "parqueDiversionesPublico",
-                      "Parques de diversiones y temáticos del sector privado": "parqueDiversionesPrivado",
-                      "Otros juegos de azar": "juegosAzar",
-                      "Campos de golf": "camposGolf",
-                      "Agentes y representantes de artistas": "agentesArtistas",
-                      "Equipos deportivos profesionales": "equiposDeportivosProfesionales",
-                      "Boliches": "boliches",
-                      "Artistas": "artistas",
-                      "Otras compañías y grupos de espectáculos artísticos del sector privado": "espectaculosArtisticosPrivado",
-                      "Marinas turísticas": "marinasTuristicas",
-                      "Jardines botánicos y zoológicos del sector privado": "jardinesBotanicos&ZologicosPrivado",
-                      "Jardines botánicos y zoológicos del sector público": "jardinesBotanicos&ZologicosPublico",
-                      "Compañías de teatro del sector privado": "teatroPrivado",
-                      "Compañías de danza del sector privado": "danzaPrivado",
-                      "Compañías de teatro del sector público": "teatroPublico",
-                      "Grutas": "grutas",
-                      "Deportistas profesionales": "deportistasProfesionales",
-                      "Sitios históricos": "sitiosHistoricos",
-                      "Compañías de danza del sector público": "danzaPublico"}
+            "Comercio al por menor de frutas y verduras frescas": "frutasYVerduras",
+            "Comercio al por menor de carnes rojas": "carnesRojas",
+            "Comercio al por menor en minisupers": "minisupers",
+            "Comercio al por menor de carne de aves": "carneAves",
+            "Comercio al por menor de dulces y materias primas para repostería": "dulcesYReposteria",
+            "Comercio al por menor de cerveza": "cerveza",
+            "Comercio al por menor de otros alimentos": "alimentosGral",
+            "Comercio al por menor de bebidas no alcohólicas y hielo": "bebidasNoAlcoholicas",
+            "Comercio al por menor de leche": "lacteos",
+            "Comercio al por menor de artículos de mercería y bonetería": "merceriaYBoneteria",
+            "Comercio al por menor de paletas de hielo y helados": "helados",
+            "Comercio al por menor de semillas y granos alimenticios": "semillasYGranos",
+            "Comercio al por menor de vinos y licores": "vinosYLicores",
+            "Comercio al por menor de pescados y mariscos": "pescadosYMariscos",
+            "Comercio al por menor en supermercados": "supermercados",
+            "Comercio al por menor de blancos": "blancos",
+            "Comercio al por menor de telas": "telas",
+            "Comercio al por menor en tiendas departamentales": "tiendasDepartamentales",
+            "Comercio al por menor de cigarros": "cigarros",
+            "Comercio al por menor en tiendas de abarrotes": "abarrotes",
+            "Centros de acondicionamiento físico del sector privado": "gimnasioPrivado",
+            "Centros de acondicionamiento físico del sector público": "gimnasioPublico",
+            "Casas de juegos electrónicos": "juegosElectronicos",
+            "Venta de billetes de lotería": "billetesLoteria",
+            "Cantantes y grupos musicales del sector privado": "gruposMusicalesPrivado",
+            "Grupos musicales del sector público": "gruposMusicalesPublico",
+            "Promotores del sector público de espectáculos artísticos": "promotorEspectaculosPublico",
+            "Promotores del sector privado de espectáculos artísticos": "promotorEspectaculosPrivado",
+            "Promotores de espectáculos artísticos": "promotorEspectaculosArtisticos",
+            "Otras compañías y grupos de espectáculos artísticos del sector privado": "espectaculosArtisticosPrivado",
+            "Otros servicios recreativos prestados por el sector privado": "serviciosRecreativosPrivado",
+            "Otros servicios recreativos prestados por el sector público": "serviciosRecreativosPublico",
+            "Parques acuáticos y balnearios del sector privado": "parquesAcuaticosPrivado",
+            "Parques acuáticos y balnearios del sector público": "parquesAcuaticosPublico",
+            "Museos del sector público": "museosPublico",
+            "Museos del sector privado": "museosPrivado",
+            "Clubes o ligas de aficionados": "clubesAficionados",
+            "Clubes deportivos del sector privado": "clubesDeportivosPrivado",
+            "Clubes deportivos del sector público": "clubesDeportivosPublico",
+            "Parques de diversiones y temáticos del sector público": "parqueDiversionesPublico",
+            "Parques de diversiones y temáticos del sector privado": "parqueDiversionesPrivado",
+            "Otros juegos de azar": "juegosAzar",
+            "Campos de golf": "camposGolf",
+            "Agentes y representantes de artistas": "representantesArtistas",
+            "Equipos deportivos profesionales": "equiposDeportivosProfesionales",
+            "Billares": "billares",
+            "Boliches": "boliches",
+            "Artistas": "artistas",
+            "Marinas turísticas": "marinasTuristicas",
+            "Jardines botánicos y zoológicos del sector privado": "jardinesBotanicosYZologicosPrivado",
+            "Jardines botánicos y zoológicos del sector público": "jardinesBotanicosYZologicosPublico",
+            "Compañías de teatro del sector privado": "teatroPrivado",
+            "Compañías de teatro del sector público": "teatroPublico",
+            "Compañías de danza del sector privado": "danzaPrivado",
+            "Compañías de danza del sector público": "danzaPublico",
+            "Grutas": "grutas",
+            "Deportistas profesionales": "deportistasProfesionales",
+            "Sitios históricos": "sitiosHistoricos",
+            "Restaurantes con servicio de preparación de tacos y tortas": "tacosYtortas",
+            "Restaurantes con servicio de preparación de antojitos": "restauranteAntojitos",
+            "Cafeterías": "cafeterias",
+            "Restaurantes que preparan otro tipo de alimentos para llevar": "restauranteParaLlevar",
+            "Restaurantes con servicio de preparación de alimentos a la carta o de comida corrida": "restauranteCarta",
+            "Restaurantes con servicio de preparación de pizzas": "pizzas",
+            "Servicios de preparación de otros alimentos para consumo inmediato": "comidaRapida",
+            "Restaurantes con servicio de preparación de pescados y mariscos": "restauranteMariscos",
+            "Bares": "bares",
+            "Restaurantes de autoservicio": "restauranteAutoservicio",
+            "Hoteles sin otros servicios integrados": "hotelSinOtroServicio",
+            "Hoteles con otros servicios integrados": "hotelConOtroServicio",
+            "Pensiones y casas de huéspedes": "pensionesHuesped",
+            "Servicios de preparación de alimentos para ocasiones especiales": "servicioPreparacionAlimentos",
+            "Moteles": "moteles",
+            "Centros nocturnos": "centrosNocturnos",
+            "Servicios de comedor para empresas e instituciones": "servicioComedorEmpresas",
+            "Cabanas": "cabanas",
+            "Departamentos y casas amueblados con servicios de hotelería": "hoteleriaServicios",
+            "Campamentos y albergues recreativos": "campamentosYAlbergues",
+            "Servicios de preparación de alimentos en unidades móviles": "alimentosUnidadesMoviles",
+            "Alquiler sin intermediación de salones para fiestas y convenciones": "alquilerFiestasYConvenciones",
+            "Alquiler de mesas": "alquilerMesas",
+            "Inmobiliarias y corredores de bienes raíces": "corredoresBienesRaices",
+            "Servicios de administración de bienes raíces": "administracionBienesRaices",
+            "Alquiler sin intermediación de otros bienes raíces": "alquilerBienesRaices",
+            "Alquiler de otros artículos para el hogar y personales": "alquilerHogarPersonales",
+            "Alquiler de maquinaria y equipo para construcción": "alquilerMaquinariaConstruccion",
+            "Alquiler de maquinaria y equipo comercial y de servicios": "alquilerMaquinariaServicios",
+            "Alquiler de maquinaria y equipo para mover": "alquilerMaquinariaParaMover",
+            "Alquiler de prendas de vestir": "alquilerPrendasDeVestir",
+            "Alquiler sin intermediación de viviendas no amuebladas": "alquilerViviendaSinMuebles",
+            "Alquiler sin intermediación de viviendas amuebladas": "alquilerViviendaAmueblada",
+            "Alquiler de automóviles sin chofer": "alquilerAutomoviles",
+            "Alquiler sin intermediación de teatros": "alquilerTeatro",
+            "Alquiler sin intermediación de oficinas y locales comerciales": "alquilerOficinas",
+            "Otros servicios relacionados con los servicios inmobiliarios": "serviciosInmobiliarios",
+            "Centros generales de alquiler": "alquilerEnGeneral",
+            "Alquiler de aparatos eléctricos y electrónicos para el hogar y personales": "alquilerElectronicos",
+            "Alquiler de equipo de cómputo y de otras máquinas y mobiliario de oficina": "alquilerEqpoComputo",
+            "Alquiler de autobuses": "alquilerAutobuses",
+            "Alquiler de maquinaria y equipo agropecuario": "alquilerEqpoAgropecuario",
+            "Alquiler de camiones de carga sin chofer": "alquilerCamionesDeCarga",
+            "Alquiler sin intermediación de edificios industriales dentro de un parque industrial": "alquilerEdifIndustriales",
+            "Servicios de alquiler de marcas registradas": "alquilerMarcaRegistrada",
+            "Alquiler de equipo de transporte": "alquilerEqpoTransporte",
+            "Bufetes jurídicos": "bufetesJuridicos",
+            "Servicios de contabilidad y auditoría": "servicioContabilidadYAuditoria",
+            "Servicios de fotografía y videograbación": "servicioFotografiaYVideo",
+            "Servicios veterinarios para mascotas prestados por el sector privado": "servicioVeterinarioPrivado",
+            "Servicios veterinarios para mascotas prestados por el sector público": "servicioVeterinarioPublico",
+            "Servicios veterinarios para la ganadería prestados por el sector privado": "servicioVeterinarioGanaderiaPrivado",
+            "Servicios veterinarios para la ganadería prestados por el sector público": "servicioVeterinarioGanaderiaPublico",
+            "Servicios de consultoría en administración": "servicioConsultoriaAdministracion",
+            "Agencias de publicidad": "agenciasPublicidad",
+            "Notarías públicas": "notariasPublicas",
+            "Servicios de diseno de sistemas de cómputo y servicios relacionados": "servicioSistemasComputo",
+            "Servicios de rotulación y otros servicios de publicidad": "servicioPublicidadYRotulacion",
+            "Servicios de arquitectura": "servicioArquitectura",
+            "Servicios de apoyo para efectuar trámites legales": "servicioTramitesLegales",
+            "Servicios de ingeniería": "servicioIngenieria",
+            "Diseno gráfico": "disenoGrafico",
+            "Otros servicios de consultoría científica y técnica": "servicioConsultoriaCientificaYTec",
+            "Laboratorios de pruebas": "laboratorios",
+            "Otros servicios profesionales": "servicioProfesionalesGral",
+            "Servicios de dibujo": "servicioDibujo",
+            "Servicios de consultoría en medio ambiente": "servicioConsultoriaMedioAmbiente",
+            "Servicios de investigación de mercados y encuestas de opinión pública": "servicioEncuestas",
+            "Diseno y decoración de interiores": "decoracionInteriores",
+            "Agencias de anuncios publicitarios": "agenciasAnunciosPublicitarios",
+            "Servicios de investigación científica y desarrollo en ciencias naturales y exactas": "investigacionEnCienciasNaturalesYExactas",
+            "Servicios de investigación científica y desarrollo en ciencias sociales y humanidades": "investigacionEnCienciasSocialesYHumanidades",
+            "Diseno de modas y otros disenos especializados": "disenoModas",
+            "Otros servicios relacionados con la contabilidad": "servicioContabilidad",
+            "Servicios de elaboración de mapas": "servicioMapas",
+            "Servicios de inspección de edificios": "servicioInspeccionEdificios",
+            "Agencias de representación de medios": "agenciasMedios",
+            "Diseno industrial": "disenoIndustrial",
+            "Agencias de relaciones públicas": "agenciaRelacionesPublicas",
+            "Servicios de traducción e interpretación": "servicioTraduccion",
+            "Distribución de material publicitario": "distribucionMaterialPublicitario",
+            "Servicios de levantamiento geofísico": "servicioGeofisica",
+            "Agencias de compra de medios a petición del cliente": "agenciaCompras",
+            "Agencias de correo directo": "agenciaCorreoDirecto",
+            "Escuelas de educación primaria del sector público": "escuelaPrimariaPublico",
+            "Escuelas de educación primaria del sector privado": "escuelaPrimariaPrivado",
+            "Escuelas de educación preescolar del sector público": "escuelaPreescolarPublico",
+            "Escuelas de educación preescolar del sector privado": "escuelaPreescolarPrivado",
+            "Escuelas de educación secundaria general del sector público": "escuelaSecundariaPublico",
+            "Escuelas de educación secundaria general del sector privado": "escuelaSecundariaPrivado",
+            "Escuelas de deporte del sector privado": "escuelaDeportePrivado",
+            "Escuelas de deporte del sector público": "escuelaDeportePublico",
+            "Escuelas del sector privado que combinan diversos niveles de educación": "escuelaDiversosNivelesPrivado",
+            "Escuelas del sector público que combinan diversos niveles de educación": "escuelaDiversosNivelesPublico",
+            "Escuelas de educación media superior del sector público": "escuelaMediaSuperiorPublico",
+            "Escuelas de educación media superior del sector privado": "escuelaMediaSuperiorPrivado",
+            "Escuelas de arte del sector privado": "escuelaArtePrivado",
+            "Escuelas de arte del sector público": "escuelaArtePublico",
+            "Escuelas de educación superior del sector privado": "escuelaSuperiorPrivado",
+            "Escuelas de educación superior del sector público": "escuelaSuperiorPublico",
+            "Escuelas del sector privado dedicadas a la ensenanza de oficios": "escuelaDeOficiosPrivado",
+            "Escuelas del sector público dedicadas a la ensenanza de oficios": "escuelaDeOficiosPublico",
+            "Escuelas de idiomas del sector privado": "escuelaIdiomasPrivado",
+            "Escuelas de idiomas del sector público": "escuelaIdiomasPublico",
+            "Escuelas de educación secundaria técnica del sector público": "escuelaSecundariaTecnicaPublico",
+            "Escuelas de educación secundaria técnica del sector privado": "escuelaSecundatiaTecnicaPrivado",
+            "Escuelas de educación técnica superior del sector privado": "escuelaTecnicaSuperiorPrivado",
+            "Escuelas de educación técnica superior del sector público": "escuelaTecnicaSuperiorPublico",
+            "Servicios de profesores particulares": "profesoresParticulates",
+            "Otros servicios educativos proporcionados por el sector privado": "servicioEducativosPrivado",
+            "Otros servicios educativos proporcionados por el sector público": "servicioEducativosPublico",
+            "Escuelas del sector público de educación para necesidades especiales": "escuelaNecesidadesEspecialesPublico",
+            "Escuelas del sector privado de educación para necesidades especiales": "escuelaNecesidadesEspecialesPrivado",
+            "Escuelas de computación del sector privado": "escuelaComputacionPrivado",
+            "Escuelas de computación del sector público": "escuelaComputacionPublico",
+            "Escuelas para la capacitación de ejecutivos del sector privado": "escuelaCapacitacionEjecutivosPrivado",
+            "Escuelas para la capacitación de ejecutivos del sector público": "escuelaCapacitacionEjecutivosPublico",
+            "Servicios de apoyo a la educación": "servicioApoyoALaEducacion",
+            "Escuelas de educación media técnica terminal del sector privado": "escuelaMediaTecnicaPrivado",
+            "Escuelas de educación media técnica terminal del sector público": "escuelaMediaTecnicaPublico",
+            "Escuelas comerciales y secretariales del sector privado": "escuelaComercialPrivado",
+            "Escuelas comerciales y secretariales del sector público": "escuelaComercialPublico",
+        }
 
         df_B = df_B.select('*',
                            reduce_name_of_category_udf(ReductDict)(f.struct('category'))
@@ -300,7 +424,7 @@ class Denue:
                 },
                 "dateCreated": {
                     "type": "DateTime",
-                    "value": str(x["fecha_alta"]) + "-01T12:00:00.00Z"
+                    "value": U.dateformat_remove_text(x["fecha_alta"]) + "-01T12:00:00.00Z"
                 },
                 "description": {
                     "type": "Text",
@@ -344,11 +468,11 @@ class Denue:
         return out
 
     # Sends data model to Orion Context Broker
-    def send_entities_to_orionCB(self, Data_):
+    def send_entities_to_orionCB(self, Data_, URL_):
         k = 0
         for item in Data_:
             try:
-                resp_orion = requests.post(G.ORION_URL2,
+                resp_orion = requests.post(URL_,
                                            data=json.dumps(item),
                                            headers=G.HEADERS,
                                            timeout=5)
@@ -358,6 +482,9 @@ class Denue:
             except requests.exceptions.Timeout as t:
                 print('Error', t)
                 print('Message : ', resp_orion.text)
+
+            except Exception as e:
+                print("Error sending data to Orion Context Broker :\n", str(e))
 
             # time.sleep(1)
             k += 1
@@ -372,7 +499,7 @@ class Denue:
                                            data=json.dumps({"actionType": "APPEND",
                                                             "entities": batch}),
                                            headers=G.HEADERS,
-                                           timeout=30)
+                                           timeout=70)
                 #print('type :', type(batch))
                 #print('len', len(batch))
                 #print(batch[0])

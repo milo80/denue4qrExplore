@@ -56,7 +56,7 @@ def contains_keyword_and_entity_udf(KWords):
         flag = True
         for item in KWords[:-1]:
             if item == '':
-                continue
+                flag = True
             elif item.lower() not in str(DCols[0]).lower():
                 flag = False
                 break
@@ -67,7 +67,7 @@ def contains_keyword_and_entity_udf(KWords):
 
         return flag
 
-    return f.udf(contains, BooleanType())
+    return f.udf(lambda x: contains(x), BooleanType())
 
 
 # Reduce name of denue category

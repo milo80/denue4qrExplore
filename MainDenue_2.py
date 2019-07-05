@@ -6,7 +6,7 @@ import functions.Utilities as utls
 import csv
 
 if __name__ == '__main__':
-    # Load "servicios temporaldes de alimentos y bebidas"
+
     Path_1 = '/home/milo/Develope/input/inegi/denue_serv_prep_alim_bebidas/conjunto_de_datos/'
     File_1 = 'denue_inegi_72_.csv'
 
@@ -27,27 +27,36 @@ if __name__ == '__main__':
 
     spark = Denue('local[*]')
 
-    CategoryName = 'denue_PorMenor1'
-    df = spark.load_denue_csv(Path_1, File_1)
+    CategoryName = 'denue_Educ'
+    df_all = spark.load_denue_csv(Path_5, File_5)
 
-    print('count: ', df.count())
-    df_all = df.drop_duplicates(subset=['id'])
+    print('count: ', df_all.count())
+    df_all = df_all.drop_duplicates(subset=['id'])
     print('after drop duplicates id: ', df_all.count())
 
-    Keywords = ['', 'ciudad de méxico']
+    Keywords = ['', '']
     df_all = spark.filter_by_address_and_federal_entity(df_all, Keywords)
     print('after filter by address : ', df_all.count())
 
     df_all = spark.match_id_activity_catalog(df_all)
 
-    FilterKeys = ['comput', 'cómput', 'dato', 'data', 'informat', 'informát']
+    #Reduce category -> subCategory
+    df_all = spark.reduce_category_name(df_all)
+
+    # Filter by <nombre_act> and <raz_social>
+    FilterKeys = ['jardin', 'grutas', 'musica', 'hist', 'danza', 'teatro', 'museo']
+    FilterKeys = ['bares', 'pizzas', 'tortas', 'tacos']
+    FilterKeys = ['comerciales']
     ColFileds = ['raz_social', 'nombre_act']
-    # df_all = spark.filter_keyword_over_columnField(df_all, FilterKeys, ColFileds)
+    df_all = spark.filter_keyword_over_columnField(df_all, FilterKeys, ColFileds)
+    print('after filter by kewords over: raz_social, nombre_act : ', df_all.count())
 
-    # TODO: change to match keyword category, NOT exact category name
+    # Filter by category name
     KeysCategory = []
-
-    df_all, CntDict, ColorDict = spark.group_by_categories_colored(df_all, 35, KeysCategory)
+    df_all, CntDict, ColorDict = spark.group_by_categories_colored(df_all,
+                                                                   35,
+                                                                   KeysCategory,
+                                                                   'reduct_cat_name')
 
     print('Dict 1 \n', CntDict)
     print('Dict 2 \n', ColorDict)
@@ -56,7 +65,8 @@ if __name__ == '__main__':
     ColorDict = GeoJson.add_count_to_category_legend(ColorDict,
                                                      CntDict)
 
-    ColorDict = spark.reduce_category_name_legend(ColorDict)
+    # ColorDict = spark.reduce_category_name_legend(ColorDict)
+
     legend_name = 'legend_' + CategoryName + '.json'
     GeoJson.save_legend_map_display(ColorDict,
                                     '/var/www/html/map_osm/data/',

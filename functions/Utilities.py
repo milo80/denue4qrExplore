@@ -106,3 +106,30 @@ def split(n, iterable):
     while piece:
         yield piece
         piece = list(islice(i, n))
+
+
+# Removes months in text
+def dateformat_remove_text(S):
+    month = {
+        "enero": "01",
+        "febrero": "02",
+        "marzo": "03",
+        "abril": "04",
+        "mayo": "05",
+        "junio": "06",
+        "julio": "07",
+        "agosto": "08",
+        "septiembre": "09",
+        "octubre": "10",
+        "noviembre": "11",
+        "diciembre": "12"
+    }
+    aux = str(S).split(' ')
+    if len(aux) > 1:
+        try:
+            mnt = str(month[str(aux[0]).lower()])
+            return str(aux[-1]) + "-" + mnt
+        except:
+            return str(aux[-1]) + "-01"
+    else:
+        return str(aux[0])

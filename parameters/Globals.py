@@ -8,7 +8,7 @@ ORION_URL3 = 'http://207.249.127.45:1026/v2/op/update'
 
 HEADERS = {'Content-Type': 'application/json', 'Fiware-Service': 'default', 'Fiware-ServicePath': '/'}
 
-BATCH_SIZE = 400
+BATCH_SIZE = 50
 
 # System home directory
 HOME_DIR = '/home/milo/'
