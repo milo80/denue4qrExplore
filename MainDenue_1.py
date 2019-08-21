@@ -46,6 +46,10 @@ if __name__ == '__main__':
     Path = '/home/milo/Develope/input/inegi/denue_serv_educativos/conjunto_de_datos/'
     File = 'denue_inegi_61_.csv'
     Categoria = 'serviciosEducativos'
+
+    Path = '/home/milo/Develope/input/inegi/denue_salud_y_asistencia_social/conjunto_de_datos/'
+    File = 'denue_inegi_62_.csv'
+    Categoria = 'saludYAsistenciaSocial'
     """
     """
 
@@ -113,7 +117,7 @@ if __name__ == '__main__':
     # spark.send_entities_to_orionCB(OCB_model, G.ORION_URL)
 
     # Send data to Orion Context Broker URL_2
-    # spark.send_entities_to_orionCB(OCB_model, G.ORION_URL2)
+    # spark.send_entities_to_orionCB(OCB_model[:50], G.ORION_URL2)
 
     # Send data to Orion Batch Mode
     spark.send_entities_to_orionCB_batch(OCB_model)

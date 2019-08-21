@@ -7,28 +7,39 @@ import csv
 
 if __name__ == '__main__':
 
-    Path_1 = '/home/milo/Develope/input/inegi/denue_serv_prep_alim_bebidas/conjunto_de_datos/'
-    File_1 = 'denue_inegi_72_.csv'
 
-    Path_2 = '/home/milo/Develope/input/inegi/denue_serv_esparcimiento_cult_dep_recreat/conjunto_de_datos/'
-    File_2 = 'denue_inegi_71_.csv'
+    Path = '/home/milo/Develope/input/inegi/denue_com_pormenor_2/conjunto_de_datos/'
+    File = 'denue_inegi_46112-46311_.csv'
+    CategoryName = 'comercios'
 
-    Path_3 = '/home/milo/Develope/input/inegi/denue_serv_inmov_alquiler_bienes_mueb/conjunto_de_datos/'
-    File_3 = 'denue_inegi_53_.csv'
+    Path = '/home/milo/Develope/input/inegi/denue_serv_esparcimiento_cult_dep_recreat/conjunto_de_datos/'
+    File = 'denue_inegi_71_.csv'
+    CategoryName = 'cultYRecrea'
 
-    Path_4 = '/home/milo/Develope/input/inegi/denue_serv_prof_cientf_tec/conjunto_de_datos/'
-    File_4 = 'denue_inegi_54_.csv'
+    Path = '/home/milo/Develope/input/inegi/denue_serv_prep_alim_bebidas/conjunto_de_datos/'
+    File = 'denue_inegi_72_.csv'
+    CategoryName = 'alimentos'
 
-    Path_5 = '/home/milo/Develope/input/inegi/denue_serv_educativos/conjunto_de_datos/'
-    File_5 = 'denue_inegi_61_.csv'
+    """
+    Path = '/home/milo/Develope/input/inegi/denue_serv_inmov_alquiler_bienes_mueb/conjunto_de_datos/'
+    File = 'denue_inegi_53_.csv'
+    CategoryName = 'rentaInmu'
 
-    Path_6 = '/home/milo/Develope/input/inegi/denue_com_pormenor_1/conjunto_de_datos/'
-    File_6 = 'denue_inegi_46111_.csv'
+    Path = '/home/milo/Develope/input/inegi/denue_serv_prof_cientf_tec/conjunto_de_datos/'
+    File = 'denue_inegi_54_.csv'
+    CategoryName = 'servProf'
+
+    Path = '/home/milo/Develope/input/inegi/denue_serv_educativos/conjunto_de_datos/'
+    File = 'denue_inegi_61_.csv'
+    CategoryName = 'servEduc'
+
+    Path = '/home/milo/Develope/input/inegi/denue_salud_y_asistencia_social/conjunto_de_datos/'
+    File = 'denue_inegi_62_.csv'
+    CategoryName = 'saludYSS'
+    """
 
     spark = Denue('local[*]')
-
-    CategoryName = 'denue_Educ'
-    df_all = spark.load_denue_csv(Path_5, File_5)
+    df_all = spark.load_denue_csv(Path, File)
 
     print('count: ', df_all.count())
     df_all = df_all.drop_duplicates(subset=['id'])
@@ -46,7 +57,7 @@ if __name__ == '__main__':
     # Filter by <nombre_act> and <raz_social>
     FilterKeys = ['jardin', 'grutas', 'musica', 'hist', 'danza', 'teatro', 'museo']
     FilterKeys = ['bares', 'pizzas', 'tortas', 'tacos']
-    FilterKeys = ['comerciales']
+    FilterKeys = []
     ColFileds = ['raz_social', 'nombre_act']
     df_all = spark.filter_keyword_over_columnField(df_all, FilterKeys, ColFileds)
     print('after filter by kewords over: raz_social, nombre_act : ', df_all.count())
@@ -58,8 +69,8 @@ if __name__ == '__main__':
                                                                    KeysCategory,
                                                                    'reduct_cat_name')
 
-    print('Dict 1 \n', CntDict)
-    print('Dict 2 \n', ColorDict)
+    #print('Dict 1 \n', CntDict)
+    #print('Dict 2 \n', ColorDict)
     # df_all.select('category').show()
 
     ColorDict = GeoJson.add_count_to_category_legend(ColorDict,
