@@ -27,17 +27,11 @@ class Denue:
         # 'https://spark.apache.org/docs/latest/configuration.html'
         self.host = host_
         conf = SparkConf().setAll([('spark.master', self.host),
-<<<<<<< HEAD
                                    ('spark.executor.memory', '6g'),
                                    ('spark.app.name', 'denue mining App'),
                                    ('spark.executor.cores', '3'),
                                    ('spark.cores.max', '3'),
-=======
-                                   ('spark.executor.memory', '4g'),
-                                   ('spark.app.name', 'denue mining App'),
-                                   ('spark.executor.cores', '4'),
-                                   ('spark.cores.max', '4'),
->>>>>>> master
+
                                    ('spark.driver.memory', '4g')])
 
         self.sc = SparkContext(conf=conf)
@@ -134,24 +128,16 @@ class Denue:
     # Function filter by street name and <Entidad>
     def filter_by_address_and_federal_entity(self, df_B: object, Keywords):
         DataColumns = ['nom_vial', 'entidad']
-<<<<<<< HEAD
         df_B = df_B.filter(contains_keyword_and_entity_udf(Keywords)(f.struct(DataColumns))).select('*')
-=======
-        df_B = df_B.filter(contains_keyword_and_entity_udf(Keywords)(
-            f.struct(DataColumns)))\
-            .select('*')
->>>>>>> master
+
 
         return df_B
 
     # Filter by keywords on any valid input field
     def filter_keyword_over_columnField(self, df_B, Keywords, ColField):
-<<<<<<< HEAD
         if len(Keywords) > 0:
             df_B = df_B.filter(filter_column_udf(Keywords)(f.struct(ColField)))
-=======
-        df_B = df_B.filter(filter_column_udf(Keywords)(f.struct(ColField)))
->>>>>>> master
+
         return df_B
 
     # Match "id_act" VS activity from SCIAN catalog
@@ -171,7 +157,6 @@ class Denue:
 
     # Broups and counts bussiness by category
     # Prints out colors by category
-<<<<<<< HEAD
     def group_by_categories_colored(self, df_B, MaxCatDisplay, KeysCategory, CategField):
         CountDict = {}
         df = df_B.groupby(CategField).count().sort(f.col('count').desc())
@@ -183,19 +168,7 @@ class Denue:
 
         for item in df.collect():
             CountDict[item[CategField]] = item['count']
-=======
-    def group_by_categories_colored(self, df_B, MaxCatDisplay, KeysCategory):
-        CountDict = {}
-        df = df_B.groupby('category').count().sort(f.col('count').desc())
-        #df = self.reduce_category_name(df)
-        #
-        if len(KeysCategory) > 0:
-            df = df.filter(f.col('category').isin(KeysCategory))
-            df_B = df_B.filter(f.col('category').isin(KeysCategory))
 
-        for item in df.collect():
-            CountDict[item['category']] = item['count']
->>>>>>> master
 
         if len(CountDict) >= MaxCatDisplay:
             KeysCategory = list(CountDict.keys())[:MaxCatDisplay]
@@ -212,18 +185,14 @@ class Denue:
 
         ColorDict = create_dict_colors(KeysCategory)
         df_B = df_B.withColumn('color_cat',
-<<<<<<< HEAD
                                color_category_udf(ColorDict)(f.col(CategField)))
-=======
-                               color_category_udf(ColorDict)(f.col('category')))
->>>>>>> master
+
 
         return df_B, CountDict, ColorDict
 
     # Reduce Category name with dictionary
     def reduce_category_name(self, df_B):
         ReductDict = {
-<<<<<<< HEAD
             "Comercio al por menor de frutas y verduras frescas": "frutasYVerduras",
             "Comercio al por menor de carnes rojas": "carnesRojas",
             "Comercio al por menor en minisupers": "minisupers",
@@ -463,28 +432,6 @@ class Denue:
             "Centros del sector privado de atención médica externa para enfermos mentales y adictos": "centroAtencionEnfermosMentalesPrivado",
             "Centros del sector público de atención médica externa para enfermos mentales y adictos": "centroAtencionEnfermosMentalesPublico",
         }
-=======
-                      "Comercio al por menor de frutas y verduras frescas": "frutasVerduras",
-                      "Comercio al por menor de carnes rojas": "carnesRojas",
-                      "Comercio al por menor en minisupers": "minisupers",
-                      "Comercio al por menor de carne de aves": "carneAves",
-                      "Comercio al por menor de dulces y materias primas para repostería": "dulcesReposteria",
-                      "Comercio al por menor de cerveza": "cerveza",
-                      "Comercio al por menor de otros alimentos": "alimentos",
-                      "Comercio al por menor de bebidas no alcohólicas y hielo": "bebidasNoAlcoholicas",
-                      "Comercio al por menor de leche": "lacteos",
-                      "Comercio al por menor de artículos de mercería y bonetería": "merceriaBoneteria",
-                      "Comercio al por menor de paletas de hielo y helados": "helados",
-                      "Comercio al por menor de semillas y granos alimenticios": "semillasGranos",
-                      "Comercio al por menor de vinos y licores": "vinosLicores",
-                      "Comercio al por menor de pescados y mariscos": "pescadosMariscos",
-                      "Comercio al por menor en supermercados": "supermercados",
-                      "Comercio al por menor de blancos": "blancos",
-                      "Comercio al por menor de telas": "telas",
-                      "Comercio al por menor en tiendas departamentales": "tiendasDepartamentales",
-                      "Comercio al por menor de cigarros": "cigarros",
-                      "Comercio al por menor en tiendas de abarrotes": "abarrotes"}
->>>>>>> master
 
         df_B = df_B.select('*',
                            reduce_name_of_category_udf(ReductDict)(f.struct('category'))
@@ -540,11 +487,8 @@ class Denue:
                 },
                 "dateCreated": {
                     "type": "DateTime",
-<<<<<<< HEAD
                     "value": U.dateformat_remove_text(x["fecha_alta"]) + "-01T12:00:00.00Z"
-=======
-                    "value": str(x["fecha_alta"]) + "-01T12:00:00.00Z"
->>>>>>> master
+
                 },
                 "description": {
                     "type": "Text",
@@ -588,19 +532,11 @@ class Denue:
         return out
 
     # Sends data model to Orion Context Broker
-<<<<<<< HEAD
     def send_entities_to_orionCB(self, Data_, URL_):
         k = 0
         for item in Data_:
             try:
                 resp_orion = requests.post(URL_,
-=======
-    def send_entities_to_orionCB(self, Data_):
-        k = 0
-        for item in Data_:
-            try:
-                resp_orion = requests.post(G.ORION_URL2,
->>>>>>> master
                                            data=json.dumps(item),
                                            headers=G.HEADERS,
                                            timeout=5)
@@ -611,12 +547,9 @@ class Denue:
                 print('Error', t)
                 print('Message : ', resp_orion.text)
 
-<<<<<<< HEAD
             except Exception as e:
                 print("Error sending data to Orion Context Broker :\n", str(e))
 
-=======
->>>>>>> master
             # time.sleep(1)
             k += 1
 
@@ -630,11 +563,8 @@ class Denue:
                                            data=json.dumps({"actionType": "APPEND",
                                                             "entities": batch}),
                                            headers=G.HEADERS,
-<<<<<<< HEAD
                                            timeout=70)
-=======
-                                           timeout=30)
->>>>>>> master
+
                 #print('type :', type(batch))
                 #print('len', len(batch))
                 #print(batch[0])

@@ -70,7 +70,7 @@ if __name__ == '__main__':
     df_all = df_all.drop_duplicates(subset=['id'])
     print('after drop duplicates id: ', df_all.count())
 
-    Keywords = ['', 'ciudad de méxico']
+    Keywords = ['insurgentes', 'ciudad de méxico']
 
     df_all = spark.filter_by_address_and_federal_entity(df_all, Keywords)
     print('after filter by address : ', df_all.count())

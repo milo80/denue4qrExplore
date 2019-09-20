@@ -23,7 +23,6 @@ if __name__ == '__main__':
     #venues.show(20)
     data_OCB = spark.maps_to_OCB_dataModel(df)
 
-    #FoursquareToOCB.printListFormat_sample(data_OCB[:3])
+    FoursquareToOCB.printListFormat_sample(data_OCB[:3])
     #FQR.sendDataToOCB(data_OCB)
-    GeoJson.map_points(data_OCB,
-                       '/var/www/html/map_osm/geojson')
+
