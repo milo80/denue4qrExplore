@@ -25,6 +25,9 @@ if __name__ == '__main__':
     ]
     print('before filter size : ', df.count())
 
+    # Clean categories: repeted, empty category field
+    df = spark.clean_categories(df)
+
     df_2, colors_dict = spark.filter_categories_colored(
         df, keys_cat, True)
     #
@@ -35,9 +38,11 @@ if __name__ == '__main__':
     # Desplega resultados en mapa
     data_OCB = spark.maps_to_OCB_dataModel(df_3)
     GeoJson.map_points(data_OCB,
-                       '/var/www/html/map_osm/data/geojson/')
-    GeoJson.save_legend_colors(colors_dict,
-                               '/var/www/html/map_osm/data/')
+                       G.OUTPUT_PATH + '/geojson/',
+                       'venues_OCB_categories')
+    GeoJson.save_legend_map_display(colors_dict,
+                                    G.OUTPUT_PATH + '/legend/',
+                                    'legend_venues_OCB_categories')
     """
     Color = create_color_palette(keys_cat)
 

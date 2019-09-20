@@ -1,6 +1,7 @@
 from classes import DataExplore
 from classes.DataExploreDenue import Denue
 from classes.DataModel import ViewData, GeoJson
+import parameters.Globals as G
 from pyspark.sql import functions as f
 import functions.Utilities as utls
 import csv
@@ -8,32 +9,32 @@ import csv
 if __name__ == '__main__':
 
 
-    Path = '/home/milo/Develope/input/inegi/denue_com_pormenor_2/conjunto_de_datos/'
+    Path = G.INPUT_SOURCE_PATH + '/inegi/denue_com_pormenor_2/conjunto_de_datos/'
     File = 'denue_inegi_46112-46311_.csv'
     CategoryName = 'comercios'
 
-    Path = '/home/milo/Develope/input/inegi/denue_serv_esparcimiento_cult_dep_recreat/conjunto_de_datos/'
+    Path = G.INPUT_SOURCE_PATH + '/inegi/denue_serv_esparcimiento_cult_dep_recreat/conjunto_de_datos/'
     File = 'denue_inegi_71_.csv'
     CategoryName = 'cultYRecrea'
 
-    Path = '/home/milo/Develope/input/inegi/denue_serv_prep_alim_bebidas/conjunto_de_datos/'
+    Path = G.INPUT_SOURCE_PATH + '/inegi/denue_serv_prep_alim_bebidas/conjunto_de_datos/'
     File = 'denue_inegi_72_.csv'
     CategoryName = 'alimentos'
 
     """
-    Path = '/home/milo/Develope/input/inegi/denue_serv_inmov_alquiler_bienes_mueb/conjunto_de_datos/'
+    Path = G.INPUT_SOURCE_PATH + '/inegi/denue_serv_inmov_alquiler_bienes_mueb/conjunto_de_datos/'
     File = 'denue_inegi_53_.csv'
     CategoryName = 'rentaInmu'
 
-    Path = '/home/milo/Develope/input/inegi/denue_serv_prof_cientf_tec/conjunto_de_datos/'
+    Path = G.INPUT_SOURCE_PATH + '/inegi/denue_serv_prof_cientf_tec/conjunto_de_datos/'
     File = 'denue_inegi_54_.csv'
     CategoryName = 'servProf'
 
-    Path = '/home/milo/Develope/input/inegi/denue_serv_educativos/conjunto_de_datos/'
+    Path = G.INPUT_SOURCE_PATH + '/inegi/denue_serv_educativos/conjunto_de_datos/'
     File = 'denue_inegi_61_.csv'
     CategoryName = 'servEduc'
 
-    Path = '/home/milo/Develope/input/inegi/denue_salud_y_asistencia_social/conjunto_de_datos/'
+    Path = G.INPUT_SOURCE_PATH + '/inegi/denue_salud_y_asistencia_social/conjunto_de_datos/'
     File = 'denue_inegi_62_.csv'
     CategoryName = 'saludYSS'
     """
@@ -46,6 +47,7 @@ if __name__ == '__main__':
     print('after drop duplicates id: ', df_all.count())
 
     Keywords = ['', '']
+
     df_all = spark.filter_by_address_and_federal_entity(df_all, Keywords)
     print('after filter by address : ', df_all.count())
 
@@ -71,6 +73,7 @@ if __name__ == '__main__':
 
     #print('Dict 1 \n', CntDict)
     #print('Dict 2 \n', ColorDict)
+
     # df_all.select('category').show()
 
     ColorDict = GeoJson.add_count_to_category_legend(ColorDict,
@@ -80,14 +83,14 @@ if __name__ == '__main__':
 
     legend_name = 'legend_' + CategoryName + '.json'
     GeoJson.save_legend_map_display(ColorDict,
-                                    '/var/www/html/map_osm/data/',
+                                    G.OUTPUT_PATH + '/legend/',
                                     legend_name)
     # df_all.show()
     PointsDenue = spark.maps_DF_to_geojson(df_all)
 
     # Save file
     GeoJson.save_geojson(PointsDenue,
-                         '/var/www/html/map_osm/data/geojson/',
+                         G.OUTPUT_PATH + '/geojson/',
                          CategoryName)
 
     """
