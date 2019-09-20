@@ -1,0 +1,13 @@
+# dependencies
+venv/
+
+# temporal readme file
+readme_setup.txt
+
+# python cache dirs
+classes/__pycache__/
+functions/__pycache__/
+parameters/__pycache__/
+
+# ID idea cache
+.idea/

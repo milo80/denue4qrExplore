@@ -3,6 +3,7 @@ from classes.DataExploreDenue import Denue
 from classes.DataModel import ViewData, GeoJson
 from pyspark.sql import functions as f
 import functions.Utilities as utls
+import parameters.Globals as G
 import csv
 
 if __name__ == '__main__':
@@ -10,15 +11,15 @@ if __name__ == '__main__':
     # Load "comercio al por menor"
     View = ViewData()
     spark = Denue('local[*]')
-    path_porMayor = '/home/milo/Develope/input/inegi/denue_00_43_csv/conjunto_de_datos/'
+    path_porMayor = G.INPUT_SOURCE_PATH + '/inegi/denue_00_43_csv/conjunto_de_datos/'
     file_porMayor = 'denue_inegi_43_.csv'
-    path_porMenor_1 = '/home/milo/Develope/input/inegi/denue_com_pormenor_1/conjunto_de_datos/'
+    path_porMenor_1 = G.INPUT_SOURCE_PATH + '/inegi/denue_com_pormenor_1/conjunto_de_datos/'
     file_porMenor_1 = 'denue_inegi_46111_.csv'
-    path_porMenor_2 = '/home/milo/Develope/input/inegi/denue_com_pormenor_2/conjunto_de_datos/'
+    path_porMenor_2 = G.INPUT_SOURCE_PATH + '/inegi/denue_com_pormenor_2/conjunto_de_datos/'
     file_porMenor_2 = 'denue_inegi_46112-46311_.csv'
-    path_porMenor_3 = '/home/milo/Develope/input/inegi/denue_com_pormenor_3/conjunto_de_datos/'
+    path_porMenor_3 = G.INPUT_SOURCE_PATH + '/inegi/denue_com_pormenor_3/conjunto_de_datos/'
     file_porMenor_3 = 'denue_inegi_46321-46531_.csv'
-    path_porMenor_4 = '/home/milo/Develope/input/inegi/denue_com_pormenor_4/conjunto_de_datos/'
+    path_porMenor_4 = G.INPUT_SOURCE_PATH + '/inegi/denue_com_pormenor_4/conjunto_de_datos/'
     file_porMenor_4 = 'denue_inegi_46591-46911_.csv'
 
     #df0 = spark.load_denue_csv(path_porMayor, file_porMayor)
@@ -37,7 +38,7 @@ if __name__ == '__main__':
     df_all = df_all.drop_duplicates(subset=['id'])
     print('after drop duplicates id: ', df_all.count())
 
-    Keywords = ['', 'ciudad de méxico']
+    Keywords = ['insurgentes', 'ciudad de méxico']
     df_all = spark.filter_by_address_and_federal_entity(df_all, Keywords)
     print('after filter by address : ', df_all.count())
 
@@ -53,7 +54,7 @@ if __name__ == '__main__':
     #print('Total Categorias : ', N)
     #df_ck.filter(f.col('category').isNull()).show()
     out = df_ck.collect()
-    SaveFile = "/home/milo/Develope/output/denue_count.csv"
+    SaveFile = G.OUTPUT_PATH + "/denue/denue_count.csv"
     with open(SaveFile, mode="w", encoding='utf-8') as f:
         writer = csv.writer(f, delimiter=',', quotechar='|',
                             quoting=csv.QUOTE_MINIMAL,
@@ -67,16 +68,15 @@ if __name__ == '__main__':
     #View.printListFormat_sample(OCB_model[:20])
 
     #print('------------------')
-    #print(OCB_model[:1])
+    print(OCB_model[:1])
     #print('------------------')
-    path = '/home/milo/Develope/output/'
-    file = 'test-format'
-    #GeoJson.save_geojson(OCB_model[:300], path, file)
+    file = 'comercio_por_menor.json'
+    GeoJson.save_geojson(OCB_model[:300], G.OUTPUT_PATH + '/geojson/', file)
     #spark.send_entities_to_orionCB(OCB_model)
 
+    """
     # Send data to Orion Batch Mode
     spark.send_entities_to_orionCB_batch(OCB_model[213850:])
-    """
     PointsDenue = spark.maps_DF_to_geojson(df_all)
 
     # Save file
@@ -89,12 +89,4 @@ if __name__ == '__main__':
     for i in KW[:-1]:
         print(i)
 
-    print('last : ', KW[-1])
-    # Carga datos del cagalogo, exploracion de catalogo
-    df = spark.load_denue_raw('./data_sample/', 'denue_ramas.csv')
-    df.printSchema()
-    print(df.count())
-    df = df.drop_duplicates(subset=['id_act'])
-    print(df.count())
-    df.show()
     """

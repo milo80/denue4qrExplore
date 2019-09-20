@@ -53,7 +53,7 @@ class Category:
     # Reads json data
     # file_name : string
     def load_json_file(self, file_name) -> object:
-        dataVenues = self.sql.read.json(G.SAVE_FILE_PATH+file_name)
+        dataVenues = self.sql.read.json(G.SAVE_PATH_4SQR+file_name)
         dataVenues = dataVenues.select(
             f.col('categories.primary'),
             f.col('id'),

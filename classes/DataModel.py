@@ -202,7 +202,7 @@ class FoursquareToOCB:
     # data_ : list / dic ; data to save
     # file_name : string
     def saveToJSON(self, data_, file_name: str):
-        with open(G.SAVE_FILE_PATH+file_name, mode="w", encoding='utf-8') as SaveFile1:
+        with open(G.OUTPUT_PATH + '/foursquare' + file_name, mode="w", encoding='utf-8') as SaveFile1:
             json.dump(data_, SaveFile1)
 
 
@@ -217,7 +217,7 @@ class GeoJson:
 
     # saves geojson format file
     @staticmethod
-    def map_points(data_list, path) -> None:
+    def map_points(data_list, path, file_name) -> None:
         out = []
         for item in data_list:
             if item['location']['value']['coordinates']:
@@ -242,7 +242,7 @@ class GeoJson:
 
         geoJson = {"type": "FeatureCollection", "features": out}
         #
-        with open(path+'veanues_data.json', mode="w", encoding='utf-8') as SaveFile1:
+        with open(path + file_name + '.json', mode="w", encoding='utf-8') as SaveFile1:
             json.dump(geoJson, SaveFile1)
 
         return None
@@ -260,7 +260,7 @@ class GeoJson:
     @staticmethod
     def save_legend_map_display(Data, Path, FileName) -> None:
         if '.json' not in str(FileName):
-            FileName = str(FileName)+'.json'
+            FileName = str(FileName) + '.json'
 
         with open(Path + FileName, mode="w", encoding='utf-8') as SaveFile1:
             json.dump(Data, SaveFile1)

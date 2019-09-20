@@ -12,12 +12,12 @@ BATCH_SIZE = 400
 
 # System home directory
 HOME_DIR = '/home/milo/'
-
-SAVE_FILE_PATH = '/home/milo/Develope/input/foursquare/'
+OUTPUT_PATH = '/home/milo/IOData/output'
+INPUT_SOURCE_PATH = '/home/milo/IOData/input'
 
 # Mongo DB
 MDB_USER_1 = 'milo'
-MDB_PASS_USER_1 = 'cyt12'
+MDB_PASS_USER_1 = 'cyt19'
 
 # TODO : crear archivo json con cuentas CLIENT_ID , CLIENT_SECRET
 

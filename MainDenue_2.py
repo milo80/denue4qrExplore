@@ -3,31 +3,32 @@ from classes.DataExploreDenue import Denue
 from classes.DataModel import ViewData, GeoJson
 from pyspark.sql import functions as f
 import functions.Utilities as utls
+import parameters.Globals as G
 import csv
 
 if __name__ == '__main__':
     # Load "servicios temporaldes de alimentos y bebidas"
-    Path_1 = '/home/milo/Develope/input/inegi/denue_serv_prep_alim_bebidas/conjunto_de_datos/'
+    Path_1 = G.INPUT_SOURCE_PATH + '/inegi/denue_serv_prep_alim_bebidas/conjunto_de_datos/'
     File_1 = 'denue_inegi_72_.csv'
 
-    Path_2 = '/home/milo/Develope/input/inegi/denue_serv_esparcimiento_cult_dep_recreat/conjunto_de_datos/'
+    Path_2 = G.INPUT_SOURCE_PATH + '/inegi/denue_serv_esparcimiento_cult_dep_recreat/conjunto_de_datos/'
     File_2 = 'denue_inegi_71_.csv'
 
-    Path_3 = '/home/milo/Develope/input/inegi/denue_serv_inmov_alquiler_bienes_mueb/conjunto_de_datos/'
+    Path_3 = G.INPUT_SOURCE_PATH + '/inegi/denue_serv_inmov_alquiler_bienes_mueb/conjunto_de_datos/'
     File_3 = 'denue_inegi_53_.csv'
 
-    Path_4 = '/home/milo/Develope/input/inegi/denue_serv_prof_cientf_tec/conjunto_de_datos/'
+    Path_4 = G.INPUT_SOURCE_PATH + '/inegi/denue_serv_prof_cientf_tec/conjunto_de_datos/'
     File_4 = 'denue_inegi_54_.csv'
 
-    Path_5 = '/home/milo/Develope/input/inegi/denue_serv_educativos/conjunto_de_datos/'
+    Path_5 = G.INPUT_SOURCE_PATH + '/inegi/denue_serv_educativos/conjunto_de_datos/'
     File_5 = 'denue_inegi_61_.csv'
 
-    Path_6 = '/home/milo/Develope/input/inegi/denue_com_pormenor_1/conjunto_de_datos/'
+    Path_6 = G.INPUT_SOURCE_PATH + '/inegi/denue_com_pormenor_1/conjunto_de_datos/'
     File_6 = 'denue_inegi_46111_.csv'
 
     spark = Denue('local[*]')
 
-    CategoryName = 'denue_PorMenor1'
+    CategoryName = 'alimentos-bebidas'
     df = spark.load_denue_csv(Path_1, File_1)
 
     print('count: ', df.count())
@@ -59,14 +60,14 @@ if __name__ == '__main__':
     ColorDict = spark.reduce_category_name_legend(ColorDict)
     legend_name = 'legend_' + CategoryName + '.json'
     GeoJson.save_legend_map_display(ColorDict,
-                                    '/var/www/html/map_osm/data/',
+                                    G.OUTPUT_PATH + '/legend/',
                                     legend_name)
     # df_all.show()
     PointsDenue = spark.maps_DF_to_geojson(df_all)
 
     # Save file
     GeoJson.save_geojson(PointsDenue,
-                         '/var/www/html/map_osm/data/geojson/',
+                         G.OUTPUT_PATH + '/geojson/',
                          CategoryName)
 
     """

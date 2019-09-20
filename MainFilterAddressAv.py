@@ -73,14 +73,11 @@ if __name__ == '__main__':
 
     # (9) Display results on http://localhost/map_osp
     GeoJson.map_points(data_OCB,
-                       '/var/www/html/map_osm/data/geojson/')
+                       G.OUTPUT_PATH + '/geojson/',
+                       'veanues_OCB_model')
     GeoJson.save_legend_map_display(colors_dict,
-                               '/var/www/html/map_osm/data/',
-                               'legend_colors.json')
-
-    #GeoJson.save_legend_map_display(count_dict,
-    #                           '/var/www/html/map_osm/data/',
-    #                           'legend_count.json')
+                                    G.OUTPUT_PATH + '/legend/',
+                                    'legend_veanues_OCB_model')
 
     print('Total Number of categories : ', len(count_dict))
     print('Total veanues sites : ', df_3.count())
