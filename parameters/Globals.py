@@ -15,7 +15,7 @@ HOME_DIR = '/home/milo/'
 OUTPUT_PATH = '/home/milo/IOData/output'
 INPUT_SOURCE_PATH = '/home/milo/IOData/input'
 
-# Mongo DB
+# Mongo DB clave y usuario en la configuracion de mongodb
 MDB_USER_1 = 'milo'
 MDB_PASS_USER_1 = 'cyt19'
 

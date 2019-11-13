@@ -73,7 +73,6 @@ if __name__ == '__main__':
 
     # (9) Display results on http://localhost/map_osp
     GeoJson.map_points(data_OCB,
-
                        G.OUTPUT_PATH + '/geojson/',
                        'veanues_OCB_model')
     GeoJson.save_legend_map_display(colors_dict,

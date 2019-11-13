@@ -8,7 +8,6 @@ import csv
 
 if __name__ == '__main__':
 
-
     Path = G.INPUT_SOURCE_PATH + '/inegi/denue_com_pormenor_2/conjunto_de_datos/'
     File = 'denue_inegi_46112-46311_.csv'
     CategoryName = 'comercios'
@@ -21,7 +20,6 @@ if __name__ == '__main__':
     File = 'denue_inegi_72_.csv'
     CategoryName = 'alimentos'
 
-    """
     Path = G.INPUT_SOURCE_PATH + '/inegi/denue_serv_inmov_alquiler_bienes_mueb/conjunto_de_datos/'
     File = 'denue_inegi_53_.csv'
     CategoryName = 'rentaInmu'
@@ -34,6 +32,7 @@ if __name__ == '__main__':
     File = 'denue_inegi_61_.csv'
     CategoryName = 'servEduc'
 
+    """
     Path = G.INPUT_SOURCE_PATH + '/inegi/denue_salud_y_asistencia_social/conjunto_de_datos/'
     File = 'denue_inegi_62_.csv'
     CategoryName = 'saludYSS'
@@ -41,8 +40,8 @@ if __name__ == '__main__':
 
     spark = Denue('local[*]')
     df_all = spark.load_denue_csv(Path, File)
-
-    print('count: ', df_all.count())
+    # N = df_all.count()
+    # print('count: ', N)
     df_all = df_all.drop_duplicates(subset=['id'])
     print('after drop duplicates id: ', df_all.count())
 
@@ -60,6 +59,7 @@ if __name__ == '__main__':
     FilterKeys = ['jardin', 'grutas', 'musica', 'hist', 'danza', 'teatro', 'museo']
     FilterKeys = ['bares', 'pizzas', 'tortas', 'tacos']
     FilterKeys = []
+    FilterKeys = ['comput', 'cómput', 'dato', 'data', 'informat', 'informát']
     ColFileds = ['raz_social', 'nombre_act']
     df_all = spark.filter_keyword_over_columnField(df_all, FilterKeys, ColFileds)
     print('after filter by kewords over: raz_social, nombre_act : ', df_all.count())

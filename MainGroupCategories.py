@@ -9,7 +9,8 @@ if __name__ == '__main__':
 
     spark = DataExplore.Category(G.MDB_USER_1, G.MDB_PASS_USER_1, '127.0.0.1:27017')
     #
-    # df = spark.load_mongoDB('foursquare', 'searchVeanues')
+    df = spark.load_mongoDB('foursquare', 'searchVeanues')
+    df.printSchema()
     #
     #filter_cat = []
     # print('before filter size : ', df.count(), )
@@ -25,8 +26,8 @@ if __name__ == '__main__':
     #spark.write_mongoDB(df_3, 'foursquare', 'veanuesCleanCategory')
 
 
-    df_3 = spark.load_full_collection_mongoDB('foursquare', 'veanuesCleanCategory')
-    df_3.printSchema()
+    # df_3 = spark.load_full_collection_mongoDB('foursquare', 'veanuesCleanCategory')
+    # df_3.printSchema()
     # spark.plot_pie(df_3)
 
     # Desplega resultados en mapa
